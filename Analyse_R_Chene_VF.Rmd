@@ -1,0 +1,451 @@
+---
+title: "Analyse for Social influence effects on food valuation generalize based on conceptual similarity"
+output: html_document
+---
+
+#### Variables name: 
+##### --> in the article "health star points" or "supermarket health score" correspond to "Average_starpoints" in the R script
+##### --> in the article "Mean beta weight tastiness" correspond to "social_taste_beta_T1_T5" or "social_taste_beta_T1_T4" in the R script
+##### --> in the article "Mean beta weight healthiness" correspond to "social_health_beta_T1_T5" or "social_health_beta_T1_T4" in the R script
+
+
+```{r, echo=FALSE, results="hide", message=FALSE, warning=FALSE}
+library(readxl)
+library(bslib)
+library(ggplot2)
+library(dplyr)
+library(plyr)
+library(effectsize)
+```
+
+
+# A) Data Loading
+#### Define your base path : base_path <- "...."
+```{r, echo=FALSE, results="hide", message=FALSE, warning=FALSE}
+base_path <- "C:/Users/ochene/OneDrive/Documents/Year2021_2022/travail/article/work document/analyse/database/de_identified/used for R/"
+```
+
+#### Read the files
+```{r }
+data1 <- read_excel(file.path(base_path, "SocBeta_Bonn_Online_study1_R.xlsx"))
+data2 <- read_excel(file.path(base_path, "SocBeta_supermarket_Paris_online_study2_R.xlsx"))
+data3 <- read_excel(file.path(base_path, "SocBeta_supermaket_Bonn_Lab_study3_R.xlsx"))
+```
+
+
+# B) Normality check
+## Analyses
+### For study1
+```{r}
+# List of variables to test
+variables <- c("social_taste_beta_T1_T5", "social_health_beta_T1_T5", 
+               "baseline_taste_beta", "baseline_health_beta",
+               "PreHunger", "PostHunger", "BMI", "Age",
+               "control_on_eating", "influence_bodily_signals", 
+               "influence_habit", "influence_seeing_others_eating", 
+               "influence_health_considerations", "influence_weight_considerations", 
+               "influence_taste", "influence_doctor_recommendations", 
+               "influence_other_people", "frequence_diet", "frequence_snacking")
+
+# Test normality using Shapiro-Wilk test
+shapiro_results <- lapply(variables, function(var) {
+  if (all(is.na(data1[[var]]))) {
+    return(NA)  # Handle empty columns
+  }
+  round(shapiro.test(data1[[var]])$p.value, 3)  # Round to 3 decimal places
+})
+
+# Store Shapiro-Wilk test results
+shapiro_results_df <- data.frame(Variable = variables, 
+                                 P_Value = unlist(shapiro_results))
+
+# Print results with 3 decimal places
+print(shapiro_results_df)
+
+# Visualization: Histogram, density plot, and QQ-plot for each variable
+for (var in variables) {
+  if (!all(is.na(data1[[var]]))) {  # Check if column is not empty
+    
+    # Histogram and density plot
+    p1 <- ggplot(data1, aes(x = .data[[var]])) +
+      geom_histogram(aes(y = ..density..), bins = 30, fill = "lightblue", color = "black", alpha = 0.7) +
+      geom_density(color = "red", linewidth = 1) +
+      ggtitle(paste("Distribution of", var))
+    
+    # QQ-plot
+    p2 <- ggplot(data1, aes(sample = .data[[var]])) +
+      stat_qq() +
+      stat_qq_line(color = "red", linewidth = 1) +
+      ggtitle(paste("QQ-plot of", var))
+    
+    print(p1)
+    print(p2)
+  }
+}
+
+
+
+```
+
+### For study2
+```{r}
+# List of variables to test
+variables <- c("social_taste_beta_T1_T4", "social_health_beta_T1_T4", 
+               "baseline_taste_beta", "baseline_health_beta", "Average_starpoints", 
+               "PreHunger", "PostHunger", "BMI", "Age",
+               "control_on_eating", "influence_bodily_signals", 
+               "influence_habit", "influence_seeing_others_eating", 
+               "influence_health_considerations", "influence_weight_considerations", 
+               "influence_taste", "influence_doctor_recommendations", 
+               "influence_other_people", "frequence_diet", "frequence_snacking")
+
+# Test normality using Shapiro-Wilk test
+shapiro_results <- lapply(variables, function(var) {
+  if (all(is.na(data2[[var]]))) {
+    return(NA)  # Handle empty columns
+  }
+  round(shapiro.test(data2[[var]])$p.value, 3)  # Round to 3 decimal places
+})
+
+# Store Shapiro-Wilk test results
+shapiro_results_df <- data.frame(Variable = variables, 
+                                 P_Value = unlist(shapiro_results))
+
+# Print results with 3 decimal places
+print(shapiro_results_df)
+
+# Visualization: Histogram, density plot, and QQ-plot for each variable
+for (var in variables) {
+  if (!all(is.na(data2[[var]]))) {  # Check if column is not empty
+    
+    # Histogram and density plot
+    p1 <- ggplot(data2, aes(x = .data[[var]])) +
+      geom_histogram(aes(y = ..density..), bins = 30, fill = "lightblue", color = "black", alpha = 0.7) +
+      geom_density(color = "red", linewidth = 1) +
+      ggtitle(paste("Distribution of", var))
+    
+    # QQ-plot
+    p2 <- ggplot(data2, aes(sample = .data[[var]])) +
+      stat_qq() +
+      stat_qq_line(color = "red", linewidth = 1) +
+      ggtitle(paste("QQ-plot of", var))
+    
+    print(p1)
+    print(p2)
+  }
+}
+
+
+```
+
+### For study3
+```{r}
+# List of variables to test
+variables <- c("social_taste_beta_T1_T5", "social_health_beta_T1_T5", 
+               "baseline_taste_beta", "baseline_health_beta", "Average_starpoints", 
+               "PreHunger", "PostHunger", "BMI", "Age",
+               "control_on_eating", "influence_bodily_signals", 
+               "influence_habit", "influence_seeing_others_eating", 
+               "influence_health_considerations", "influence_weight_considerations", 
+               "influence_taste", "influence_doctor_recommendations", 
+               "influence_other_people", "frequence_diet", "frequence_snacking")
+
+# Test normality using Shapiro-Wilk test
+shapiro_results <- lapply(variables, function(var) {
+  if (all(is.na(data3[[var]]))) {
+    return(NA)  # Handle empty columns
+  }
+  round(shapiro.test(data3[[var]])$p.value, 3)  # Round to 3 decimal places
+})
+
+# Store Shapiro-Wilk test results
+shapiro_results_df <- data.frame(Variable = variables, 
+                                 P_Value = unlist(shapiro_results))
+
+# Print results with 3 decimal places
+print(shapiro_results_df)
+
+# Visualization: Histogram, density plot, and QQ-plot for each variable
+for (var in variables) {
+  if (!all(is.na(data3[[var]]))) {  # Check if column is not empty
+    
+    # Histogram and density plot
+    p1 <- ggplot(data3, aes(x = .data[[var]])) +
+      geom_histogram(aes(y = ..density..), bins = 30, fill = "lightblue", color = "black", alpha = 0.7) +
+      geom_density(color = "red", linewidth = 1) +
+      ggtitle(paste("Distribution of", var))
+    
+    # QQ-plot
+    p2 <- ggplot(data3, aes(sample = .data[[var]])) +
+      stat_qq() +
+      stat_qq_line(color = "red", linewidth = 1) +
+      ggtitle(paste("QQ-plot of", var))
+    
+    print(p1)
+    print(p2)
+  }
+}
+
+
+```
+## Interpretation
+
+### Interpretation for social_taste_beta_T1_T5, social_health_beta_T1_T5, baseline_taste_beta, and baseline_health_beta
+For Study 1, baseline_taste_beta is significant; for Study 2, social_health_beta_T1_T4 and Average_starpoints are  significant; and for Study 3, social_taste_beta_T1_T5, Average_starpoints, and baseline_taste_beta are significant. This indicates that these variables do not follow a normal distribution. However, since we have more than 60 participants and the QQ plots and distributions suggest an approximation to normality, we consider them normally distributed and proceed with parametric analyses.
+
+### Interpretation for other variables
+For all other variables, the test results, QQ plots, and distributions do not indicate normality. Therefore, we will use non-parametric tests.
+
+
+
+# C) Analyses in the manuscript
+
+## 1) Result for social influence task
+### a) for panel B in the figures 2 and 3
+#### General linear model to test the effect of the social influence group on the health and taste weights during the entire social influence phase, controlling for baseline weights
+```{r }
+#Study 1
+summary(lm(social_health_beta_T1_T5 ~ baseline_health_beta+influence_group, data=data1)); #Fig. 2B
+summary(lm(social_taste_beta_T1_T5 ~ baseline_taste_beta+influence_group, data=data1));#Fig. 3B
+
+#Study 2
+summary(lm(social_health_beta_T1_T4 ~ baseline_health_beta+influence_group, data=data2));#Fig. 2D
+summary(lm(social_taste_beta_T1_T4 ~ baseline_taste_beta+influence_group, data=data2));#Fig. 3D
+
+#Study 3
+summary(lm(social_health_beta_T1_T5 ~ baseline_health_beta+influence_group, data=data3));#Fig. 2F
+summary(lm(social_taste_beta_T1_T5 ~ baseline_taste_beta+influence_group, data=data3));#Fig. 3F
+```
+
+#### For mean and SD
+```{r }
+#Study 1
+ddply(data1,~influence_group,summarise,mean=mean(social_health_beta_T1_T5),sd=sd(social_health_beta_T1_T5))
+ddply(data1,~influence_group,summarise,mean=mean(social_taste_beta_T1_T5),sd=sd(social_taste_beta_T1_T5))
+
+#Study 2
+ddply(data2,~influence_group,summarise,mean=mean(social_health_beta_T1_T4),sd=sd(social_health_beta_T1_T4))
+ddply(data2,~influence_group,summarise,mean=mean(social_taste_beta_T1_T4),sd=sd(social_taste_beta_T1_T4))
+
+#Study 3
+ddply(data3,~influence_group,summarise,mean=mean(social_health_beta_T1_T5),sd=sd(social_health_beta_T1_T5))
+ddply(data3,~influence_group,summarise,mean=mean(social_taste_beta_T1_T5),sd=sd(social_taste_beta_T1_T5))
+
+```
+
+
+#### For cohen D: 
+```{r }
+#Study 1
+cohens_d(social_health_beta_T1_T5 ~ influence_group, data=data1);
+cohens_d(social_taste_beta_T1_T5 ~ influence_group, data=data1);
+
+#Study 2
+cohens_d(social_health_beta_T1_T4 ~ influence_group, data=data2);
+cohens_d(social_taste_beta_T1_T4 ~ influence_group, data=data2);
+
+#Study 3
+cohens_d(social_health_beta_T1_T5 ~ influence_group, data=data3);
+cohens_d(social_taste_beta_T1_T5 ~ influence_group, data=data3);
+
+```
+
+
+
+## 2) Results for supermarket task
+
+### a) For Figure 4, Panels A and C
+#### Correlation between objective health score and participant health weighting during the social influence phase (T1 to T5) from the social influence task
+```{r }
+#Study 2
+cor.test(data2$social_health_beta_T1_T4, data2$Average_starpoints) #Fig 4.A
+
+#Study 3
+cor.test(data3$social_health_beta_T1_T5, data3$Average_starpoints) #Fig 4.C
+```
+
+
+
+### b) For Figure 4 panel B and D
+#### Difference between the two influence groups in their objective health score
+```{r }
+#Study 2
+t.test(Average_starpoints~influence_group,data=data2)#Fig 4.B
+
+#Study 3
+t.test(Average_starpoints~influence_group,data=data3)#Fig 4.D
+```
+
+#### For cohen D
+```{r }
+#Study 2
+cohens_d(Average_starpoints ~ influence_group, data=data2);
+
+#Study 3
+cohens_d(Average_starpoints ~ influence_group, data=data3);
+```
+
+
+
+
+# C) Additional analysis to compare the two groups 
+## 1) for continuous variables: Mann-Whitney U test (Supplementary Table S1)
+```{r, warning=FALSE}
+# Function to perform Mann-Whitney tests and create a results table
+perform_tests <- function(data, group_var, test_vars) {
+  # Initialize an empty results data frame
+  results <- data.frame(Variable = character(),
+                        Health_Mean = numeric(),
+                        Health_SD = numeric(),
+                        Taste_Mean = numeric(),
+                        Taste_SD = numeric(),
+                        W_Statistic = numeric(),
+                        P_Value = numeric(),
+                        DF = integer(),
+                        stringsAsFactors = FALSE)
+  
+  # Loop through each variable to test
+  for (var in test_vars) {
+    # Subset data for the two groups: Health and Taste
+    health_group <- data[[var]][data[[group_var]] == "Health"]
+    taste_group <- data[[var]][data[[group_var]] == "Taste"]
+    
+    # Perform the Mann-Whitney U test (Wilcoxon rank-sum test)
+    test <- wilcox.test(health_group, taste_group)
+    
+    # Calculate means and standard deviations for each group
+    health_mean <- round(mean(health_group, na.rm = TRUE), 2)
+    health_sd <- round(sd(health_group, na.rm = TRUE), 2)
+    taste_mean <- round(mean(taste_group, na.rm = TRUE), 2)
+    taste_sd <- round(sd(taste_group, na.rm = TRUE), 2)
+    
+    # Calculate degrees of freedom: (n1 + n2 - 2)
+    df <- (length(health_group[!is.na(health_group)]) + 
+           length(taste_group[!is.na(taste_group)])) - 2
+    
+    # Append the results to the results data frame
+    results <- rbind(results, data.frame(
+      Variable = var,
+      Health_Mean = health_mean,
+      Health_SD = health_sd,
+      Taste_Mean = taste_mean,
+      Taste_SD = taste_sd,
+      W_Statistic = as.integer(test$statistic),  # No decimals
+      P_Value = round(test$p.value, 2),
+      DF = df
+    ))
+  }
+  
+  return(results)
+}
+
+# List of variables to test
+variables_to_test <- c(
+  "PreHunger", "PostHunger", "BMI", "Age",
+  "control_on_eating", "influence_bodily_signals", 
+  "influence_habit", "influence_seeing_others_eating", 
+  "influence_health_considerations", "influence_weight_considerations", 
+  "influence_taste", "influence_doctor_recommendations", 
+  "influence_other_people", "frequence_diet", "frequence_snacking"
+)
+
+# Apply the function to each dataset
+results_data1 <- perform_tests(data1, "influence_group", variables_to_test)
+results_data2 <- perform_tests(data2, "influence_group", variables_to_test)
+results_data3 <- perform_tests(data3, "influence_group", variables_to_test)
+
+# Display the results
+cat("Results for Data1:\n")
+print(results_data1)
+cat("\nResults for Data2:\n")
+print(results_data2)
+cat("\nResults for Data3:\n")
+print(results_data3)
+
+
+```
+
+
+## 2) for categorical variables: chi2 test (Supplementary Table S2)
+```{r, warning=FALSE}
+# Function to calculate group counts and perform Chi-squared or Fisher's exact tests
+perform_chi2_fisher_tests <- function(data, group_var, cat_vars) {
+  # Initialize an empty results data frame
+  results <- data.frame(Variable = character(),
+                        Category = character(),
+                        Health_Count = numeric(),
+                        Taste_Count = numeric(),
+                        Test_Type = character(),
+                        Chi2_Statistic = numeric(),
+                        P_Value = numeric(),
+                        stringsAsFactors = FALSE)
+  
+  # Loop through each categorical variable
+  for (var in cat_vars) {
+    # Check if the variable exists in the dataset
+    if (!var %in% colnames(data)) {
+      warning(paste("Variable", var, "not found in the dataset. Skipping..."))
+      next
+    }
+    
+    # Remove rows with missing data for this variable and the group variable
+    data_clean <- data[!is.na(data[[var]]) & !is.na(data[[group_var]]), ]
+    
+    # Check if there is any data left after cleaning
+    if (nrow(data_clean) == 0) {
+      warning(paste("No non-missing data for variable", var, "after cleaning. Skipping..."))
+      next
+    }
+    
+    # Create a contingency table
+    table <- table(data_clean[[var]], data_clean[[group_var]])
+    
+    # Check if any expected frequencies are < 5
+    if (any(chisq.test(table)$expected < 5)) {
+      # Use Fisher's exact test
+      test <- fisher.test(table)
+      test_type <- "Fisher"
+      chi2_statistic <- NA  # Fisher's test does not produce a chi-squared statistic
+    } else {
+      # Use Chi-squared test
+      test <- chisq.test(table)
+      test_type <- "Chi-squared"
+      chi2_statistic <- test$statistic
+    }
+    
+    # Extract counts for each category
+    for (category in rownames(table)) {
+      results <- rbind(results, data.frame(
+        Variable = var,
+        Category = category,
+        Health_Count = ifelse("Health" %in% colnames(table), table[category, "Health"], 0),
+        Taste_Count = ifelse("Taste" %in% colnames(table), table[category, "Taste"], 0),
+        Test_Type = test_type,
+        Chi2_Statistic = chi2_statistic,
+        P_Value = test$p.value
+      ))
+    }
+  }
+  
+  return(results)
+}
+
+# List of categorical variables to test
+categorical_vars <- c("Sex", "income_category", "education_category")
+
+# Apply the function to each dataset
+counts_data1_with_chi2 <- perform_chi2_fisher_tests(data1, "influence_group", categorical_vars)
+counts_data2_with_chi2 <- perform_chi2_fisher_tests(data2, "influence_group", categorical_vars)
+counts_data3_with_chi2 <- perform_chi2_fisher_tests(data3, "influence_group", categorical_vars)
+
+# Display the results
+cat("Chi-squared and Fisher Test Results for Data1:\n")
+print(counts_data1_with_chi2)
+cat("\nChi-squared and Fisher Test Results for Data2:\n")
+print(counts_data2_with_chi2)
+cat("\nChi-squared and Fisher Test Results for Data3:\n")
+print(counts_data3_with_chi2)
+
+
+```
+
